@@ -10,16 +10,16 @@
 -A OUTPUT -o lo -j ACCEPT
 
 # ping & ssh
--A INPUT -p icmp --icmp-type echo-request -j ACCEPT
--A INPUT -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv4.interface }} -p icmp --icmp-type echo-request -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
 {% if iptables_webserver %}
 
 # http & https
--A INPUT -p tcp -m multiport --dports 80,443 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m multiport --dports 80,443 -m state --state NEW,ESTABLISHED -j ACCEPT
 {% endif %}
 
 # allow established/related INPUT
--A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv4.interface }} -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 -N LOG_INPUT
 -A INPUT -j LOG_INPUT
