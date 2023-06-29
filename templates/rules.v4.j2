@@ -1,3 +1,7 @@
+#######################
+### ANSIBLE MANAGED ###
+#######################
+
 *filter
 -F
 -X
@@ -9,22 +13,54 @@
 -A INPUT -i lo -j ACCEPT
 -A OUTPUT -o lo -j ACCEPT
 
-# ping & ssh
--A INPUT -i {{ ansible_default_ipv4.interface }} -p icmp --icmp-type echo-request -j ACCEPT
--A INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
+#########################
+### BGN INBOUND RULES ###
+#########################
+# ping in
+-A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -j ACCEPT
+-A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT
+
+# ssh in
+-A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p tcp -m tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
 {% if iptables_webserver %}
 
-# http & https
--A INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m multiport --dports 80,443 -m state --state NEW,ESTABLISHED -j ACCEPT
+# http / https in
+-A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p tcp -m multiport --dports 80,443 -m state --state NEW,ESTABLISHED -j ACCEPT
+-O OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p tcp -m multiport --sports 80,443 -m state --state ESTABLISHED -j ACCEPT
 {% endif %}
+#########################
+### END INBOUND RULES ###
+#########################
 
-# allow established/related INPUT
--A INPUT -i {{ ansible_default_ipv4.interface }} -m state --state ESTABLISHED,RELATED -j ACCEPT
+##########################
+### BGN OUTBOUND RULES ###
+##########################
+# ping out
+-A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT
 
+# ntp / dns out
+-A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p udp -m multiport --dports 123,53 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p udp -m multiport --sports 123,53 -m state --state ESTABLISHED -j ACCEPT
+
+# http / https out
+-A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT
+##########################
+### END OUTBOUND RULES ###
+##########################
+
+# drop rules
 -N LOG_INPUT
 -A INPUT -j LOG_INPUT
 -A LOG_INPUT -j LOG --log-prefix "IPTABLES-INPUT: "
 -A LOG_INPUT -j DROP
+
+-N LOG_OUTPUT
+-A OUTPUT -j LOG_OUTPUT
+-A LOG_OUTPUT -j LOG --log-prefix "IPTABLES-OUTPUT: "
+-A LOG_OUTPUT -j DROP
 
 -N LOG_FWD
 -A FORWARD -j LOG_FWD
