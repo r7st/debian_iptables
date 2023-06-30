@@ -44,6 +44,10 @@
 -A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p udp -m multiport --dports 123,53 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
 -A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p udp -m multiport --sports 123,53 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
 
+# dhcp out
+-A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p udp -m multiport --dports 67,68 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
+-A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p udp -m multiport --sports 67,68 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
+
 # http / https out
 -A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
 -A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
