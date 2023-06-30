@@ -1,3 +1,5 @@
+{% set def_int = ansible_default_ipv4.interface %}
+{% set def_addr = ansible_default_ipv4.address %}
 #######################
 ### ANSIBLE MANAGED ###
 #######################
@@ -17,17 +19,17 @@
 ### BGN INBOUND RULES ###
 #########################
 # ping in
--A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ping in"
--A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ping in"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ping in"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ping in"
 
 # ssh in
--A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ssh in"
--A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p tcp -m tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ssh in"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ssh in"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ssh in"
 {% if iptables_webserver %}
 
 # http / https in
--A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p tcp -m multiport --dports 80,443 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https in"
--O OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p tcp -m multiport --sports 80,443 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "http / https in"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --dports 80,443 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https in"
+-O OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --sports 80,443 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "http / https in"
 {% endif %}
 #########################
 ### END INBOUND RULES ###
@@ -37,20 +39,20 @@
 ### BGN OUTBOUND RULES ###
 ##########################
 # ping out
--A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ping out"
--A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ping out"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ping out"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ping out"
 
 # ntp / dns out
--A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p udp -m multiport --dports 123,53 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
--A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p udp -m multiport --sports 123,53 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p udp -m multiport --dports 123,53 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p udp -m multiport --sports 123,53 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
 
 # dhcp out
--A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p udp -m multiport --dports 67,68 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
--A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p udp -m multiport --sports 67,68 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p udp -m multiport --dports 67,68 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p udp -m multiport --sports 67,68 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
 
 # http / https out
--A OUTPUT -o {{ ansible_default_ipv4.interface }} -s {{ ansible_default_ipv4.address }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
--A INPUT -i {{ ansible_default_ipv4.interface }} -d {{ ansible_default_ipv4.address }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
 ##########################
 ### END OUTBOUND RULES ###
 ##########################
