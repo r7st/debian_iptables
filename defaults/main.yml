@@ -1,1 +1,2 @@
 iptables_webserver: false
+iptables_dhcp: true

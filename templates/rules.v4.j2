@@ -45,10 +45,12 @@
 # ntp / dns out
 -A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p udp -m multiport --dports 123,53 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
 -A INPUT -i {{ def_int }} -d {{ def_addr }} -p udp -m multiport --sports 123,53 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
+{% if iptables_dhcp %}
 
 # dhcp out
 -A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p udp -m multiport --dports 67,68 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
 -A INPUT -i {{ def_int }} -d {{ def_addr }} -p udp -m multiport --sports 67,68 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
+{% endif %}
 
 # http / https out
 -A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
