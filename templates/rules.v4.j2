@@ -18,6 +18,19 @@
 # loopback allowed
 -A INPUT -i lo -j ACCEPT
 -A OUTPUT -o lo -j ACCEPT
+{% if (iptables_blocked_hosts is defined) and (iptables_blocked_hosts | length > 0) %}
+
+#########################
+### BGN BLOCKED HOSTS ###
+#########################
+{% for host in iptables_blocked_hosts %}
+-A INPUT -s {{ host }} -j DROP -m comment --comment "block host"
+-A OUTPUT -d {{ host }} -j DROP -m comment --comment "block host"
+{% endfor %}
+#########################
+### END BLOCKED HOSTS ###
+#########################
+{% endif %}
 
 #########################
 ### BGN INBOUND RULES ###
