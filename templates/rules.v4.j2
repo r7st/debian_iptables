@@ -1,5 +1,9 @@
 {% set def_int = ansible_default_ipv4.interface %}
 {% set def_addr = ansible_default_ipv4.address %}
+{% set def_in = "-A INPUT -i " ~ def_int ~ " -d " ~ def_addr  %}
+{% set def_out = "-A OUTPUT -o " ~ def_int ~ " -s " ~ def_addr %}
+{% set state_ne_com = "-m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment" %}
+{% set state_e_com = "-m state --state ESTABLISHED -j ACCEPT -m comment --comment" %}
 #######################
 ### ANSIBLE MANAGED ###
 #######################
@@ -19,42 +23,42 @@
 ### BGN INBOUND RULES ###
 #########################
 # ping in
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ping in"
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ping in"
+{{ def_in }} -p icmp --icmp-type echo-request {{ state_ne_com }} "ping in"
+{{ def_out }} -p icmp --icmp-type echo-reply {{ state_e_com }} "ping in"
 
 # ssh in
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ssh in"
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ssh in"
+{{ def_in }} -p tcp -m tcp --dport 22 {{ state_ne_com }} "ssh in"
+{{ def_out }} -p tcp -m tcp --sport 22 {{ state_e_com }} "ssh in"
 {% if iptables_webserver %}
 
 # http / https in
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "https & http in"
--O OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "https & http in"
+{{ def_in }} -p tcp -m multiport --dports 443,80 {{ state_ne_com }} "https & http in"
+-O OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --sports 443,80 {{ state_e_com }} "https & http in"
 {% endif %}
 {% if iptables_zabbix is defined and iptables_zabbix %}
 
 # zabbix in
--A INPUT -i {{ def_int }} -d {{ def_addr }} {% if iptables_zabbix_src is defined %}
+{{ def_in }} {% if iptables_zabbix_src is defined %}
 -s {{ iptables_zabbix_src+" "-}}
 {% endif %}
--p tcp --dport 10050 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "zabbix in"
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} {% if iptables_zabbix_src is defined -%}
+-p tcp --dport 10050 {{ state_ne_com }} "zabbix in"
+{{ def_out }} {% if iptables_zabbix_src is defined -%}
 -d {{ iptables_zabbix_src+" "-}}
 {% endif %}
--p tcp --sport 10050 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "zabbix in"
+-p tcp --sport 10050 {{ state_e_com }} "zabbix in"
 {% endif %}
 {% if iptables_snmp is defined and iptables_snmp %}
 
 # snmp in
 {% for protocol in [ "tcp", "udp" ] %}
--A INPUT -i {{ def_int }} -d {{ def_addr }} {% if iptables_snmp_src is defined %}
+{{ def_in }} {% if iptables_snmp_src is defined %}
 -s {{ iptables_snmp_src+" "-}}
 {% endif %}
--p {{ protocol }} -m multiport --dports 161,162 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "snmp in"
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} {% if iptables_snmp_src is defined -%}
+-p {{ protocol }} -m multiport --dports 161,162 {{ state_ne_com }} "snmp in"
+{{ def_out }} {% if iptables_snmp_src is defined -%}
 -d {{ iptables_snmp_src+" "-}}
 {% endif %}
--p {{ protocol }} -m multiport --sports 161,162 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "snmp in"
+-p {{ protocol }} -m multiport --sports 161,162 {{ state_e_com }} "snmp in"
 {% endfor %}
 {% endif %}
 #########################
@@ -65,22 +69,22 @@
 ### BGN OUTBOUND RULES ###
 ##########################
 # ping out
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ping out"
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ping out"
+{{ def_out }} -p icmp --icmp-type echo-request {{ state_ne_com }} "ping out"
+{{ def_in }} -p icmp --icmp-type echo-reply {{ state_e_com }} "ping out"
 
 # ntp / dns out
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p udp -m multiport --dports 123,53 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ntp & dns out"
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p udp -m multiport --sports 123,53 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ntp & dns out"
+{{ def_out }} -p udp -m multiport --dports 123,53 {{ state_ne_com }} "ntp & dns out"
+{{ def_in }} -p udp -m multiport --sports 123,53 {{ state_e_com }} "ntp & dns out"
 {% if iptables_dhcp %}
 
 # dhcp out
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p udp -m multiport --dports 67,68 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p udp -m multiport --sports 67,68 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "dhcp out"
+{{ def_out }} -p udp -m multiport --dports 67,68 {{ state_ne_com }} "dhcp out"
+{{ def_in }} -p udp -m multiport --sports 67,68 {{ state_e_com }} "dhcp out"
 {% endif %}
 
 # http / https out
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "https & http out"
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "https & http out"
+{{ def_out }} -p tcp -m multiport --dports 443,80 {{ state_ne_com }} "https & http out"
+{{ def_in }} -p tcp -m multiport --sports 443,80 {{ state_e_com }} "https & http out"
 ##########################
 ### END OUTBOUND RULES ###
 ##########################
