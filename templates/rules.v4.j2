@@ -33,7 +33,7 @@
 
 # http / https in
 {{ def_in }} -p tcp -m multiport --dports 443,80 {{ state_ne_com }} "https & http in"
--O OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --sports 443,80 {{ state_e_com }} "https & http in"
+{{ def_out }} -p tcp -m multiport --sports 443,80 {{ state_e_com }} "https & http in"
 {% endif %}
 {% if iptables_zabbix is defined and iptables_zabbix %}
 
