@@ -58,6 +58,18 @@
 ##########################
 ### END OUTBOUND RULES ###
 ##########################
+{% if (iptables_custom_rules is defined) and (iptables_custom_rules | length > 0) %}
+
+########################
+### BGN CUSTOM RULES ###
+########################
+{% for rule in iptables_custom_rules %}
+{{ rule }}
+{% endfor %}
+########################
+### END CUSTOM RULES ###
+########################
+{% endif %}
 
 # drop rules
 -N LOG_INPUT
