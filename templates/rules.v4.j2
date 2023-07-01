@@ -28,8 +28,8 @@
 {% if iptables_webserver %}
 
 # http / https in
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --dports 80,443 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https in"
--O OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --sports 80,443 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "http / https in"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "https & http in"
+-O OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "https & http in"
 {% endif %}
 {% if iptables_zabbix is defined and iptables_zabbix %}
 
@@ -69,8 +69,8 @@
 -A INPUT -i {{ def_int }} -d {{ def_addr }} -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ping out"
 
 # ntp / dns out
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p udp -m multiport --dports 123,53 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p udp -m multiport --sports 123,53 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ntp / dns out"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p udp -m multiport --dports 123,53 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "ntp & dns out"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p udp -m multiport --sports 123,53 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "ntp & dns out"
 {% if iptables_dhcp %}
 
 # dhcp out
@@ -79,8 +79,8 @@
 {% endif %}
 
 # http / https out
--A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
--A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "http / https out"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --dports 443,80 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "https & http out"
+-A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --sports 443,80 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "https & http out"
 ##########################
 ### END OUTBOUND RULES ###
 ##########################
