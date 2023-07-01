@@ -31,6 +31,32 @@
 -A INPUT -i {{ def_int }} -d {{ def_addr }} -p tcp -m multiport --dports 80,443 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "http / https in"
 -O OUTPUT -o {{ def_int }} -s {{ def_addr }} -p tcp -m multiport --sports 80,443 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "http / https in"
 {% endif %}
+{% if iptables_zabbix is defined and iptables_zabbix %}
+
+# zabbix in
+-A INPUT -i {{ def_int }} -d {{ def_addr }} {% if iptables_zabbix_src is defined %}
+-s {{ iptables_zabbix_src+" "-}}
+{% endif %}
+-p tcp --dport 10050 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "zabbix in"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} {% if iptables_zabbix_src is defined -%}
+-d {{ iptables_zabbix_src+" "-}}
+{% endif %}
+-p tcp --sport 10050 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "zabbix in"
+{% endif %}
+{% if iptables_snmp is defined and iptables_snmp %}
+
+# snmp in
+{% for protocol in [ "tcp", "udp" ] %}
+-A INPUT -i {{ def_int }} -d {{ def_addr }} {% if iptables_snmp_src is defined %}
+-s {{ iptables_snmp_src+" "-}}
+{% endif %}
+-p {{ protocol }} -m multiport --dports 161,162 -m state --state NEW,ESTABLISHED -j ACCEPT -m comment --comment "snmp in"
+-A OUTPUT -o {{ def_int }} -s {{ def_addr }} {% if iptables_snmp_src is defined -%}
+-d {{ iptables_snmp_src+" "-}}
+{% endif %}
+-p {{ protocol }} -m multiport --sports 161,162 -m state --state ESTABLISHED -j ACCEPT -m comment --comment "snmp in"
+{% endfor %}
+{% endif %}
 #########################
 ### END INBOUND RULES ###
 #########################
