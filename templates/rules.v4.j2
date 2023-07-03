@@ -40,8 +40,16 @@
 {{ def_out }} -p icmp --icmp-type echo-reply {{ state_e_com }} "ping in"
 
 # ssh in
-{{ def_in }} -p tcp -m tcp --dport 22 {{ state_ne_com }} "ssh in"
-{{ def_out }} -p tcp -m tcp --sport 22 {{ state_e_com }} "ssh in"
+{{ def_in }} {% if (iptables_ssh_srcs is defined) and (iptables_ssh_srcs | length > 0) %}
+-s {% for src in iptables_ssh_srcs -%}
+{%- if loop.last %}{{ src }} {% else -%}
+{{ src }},{% endif %}{%- endfor %}{% endif %}
+-p tcp -m tcp --dport 22 {{ state_ne_com }} "ssh in"
+{{ def_out }} {% if (iptables_ssh_srcs is defined) and (iptables_ssh_srcs | length > 0) %}
+-d {% for src in iptables_ssh_srcs -%}
+{%- if loop.last %}{{ src }} {% else -%}
+{{ src }},{% endif %}{%- endfor %}{% endif %}
+-p tcp -m tcp --sport 22 {{ state_e_com }} "ssh in"
 {% if iptables_webserver %}
 
 # http / https in
