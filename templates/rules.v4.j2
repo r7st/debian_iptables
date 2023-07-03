@@ -36,8 +36,8 @@
 ### BGN INBOUND RULES ###
 #########################
 # ping in
-{{ def_in }} -p icmp --icmp-type echo-request {{ state_ne_com }} "ping in"
-{{ def_out }} -p icmp --icmp-type echo-reply {{ state_e_com }} "ping in"
+-A INPUT -p icmp --icmp-type echo-request {{ state_ne_com }} "ping in"
+-A OUTPUT -p icmp --icmp-type echo-reply {{ state_e_com }} "ping in"
 
 # ssh in
 {{ def_in }} {% if (iptables_ssh_srcs is defined) and (iptables_ssh_srcs | length > 0) %}
@@ -90,8 +90,8 @@
 ### BGN OUTBOUND RULES ###
 ##########################
 # ping out
-{{ def_out }} -p icmp --icmp-type echo-request {{ state_ne_com }} "ping out"
-{{ def_in }} -p icmp --icmp-type echo-reply {{ state_e_com }} "ping out"
+-A OUTPUT -p icmp --icmp-type echo-request {{ state_ne_com }} "ping out"
+-A INPUT -p icmp --icmp-type echo-reply {{ state_e_com }} "ping out"
 
 # ntp / dns out
 {{ def_out }} -p udp -m multiport --dports 123,53 {{ state_ne_com }} "ntp & dns out"
