@@ -1,2 +1,4 @@
-iptables_webserver: false
 iptables_dhcp: true
+iptables_webserver: false
+iptables_zabbix: false
+iptables_snmp: false

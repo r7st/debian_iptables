@@ -2,8 +2,11 @@
 - name: Iptables asserts
   ansible.builtin.assert:
     that:
+      - ansible_facts['os_family'] == "Debian"
       - iptables_dhcp is boolean
       - iptables_webserver is boolean
+      - iptables_zabbix is boolean
+      - iptables_snmp is boolean
 
 - name: Remove ufw
   ansible.builtin.apt:
