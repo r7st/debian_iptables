@@ -99,12 +99,12 @@
 # dns out
 {% if (iptables_dns_dsts is defined) and (iptables_dns_dsts | length > 0) %}
 {% for dst in iptables_dns_dsts %}
-{{ def_out }} -d {{ dst }}/32 -p udp --dport 53 {{ state_ne_com }} "dns out"
-{{ def_in }} -s {{ dst }}/32 -p udp --sport 53 {{ state_e_com }} "dns out"
+{{ def_out }} -d {{ dst }}/32 -p {{ iptables_dns_proto }} --dport {{ iptables_dns_port }} {{ state_ne_com }} "dns out"
+{{ def_in }} -s {{ dst }}/32 -p {{ iptables_dns_proto }} --sport {{ iptables_dns_port }} {{ state_e_com }} "dns out"
 {% endfor %}
 {% else %}
-{{ def_out }} -p udp --dport 53 {{ state_ne_com }} "dns out"
-{{ def_in }} -p udp --sport 53 {{ state_e_com }} "dns out"
+{{ def_out }} -p {{ iptables_dns_proto }} --dport {{ iptables_dns_port }} {{ state_ne_com }} "dns out"
+{{ def_in }} -p {{ iptables_dns_proto }} --sport {{ iptables_dns_port }} {{ state_e_com }} "dns out"
 {% endif %}
 {% if iptables_dhcp %}
 

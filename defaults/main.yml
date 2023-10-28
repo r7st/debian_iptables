@@ -1,3 +1,5 @@
+iptables_dns_proto: udp
+iptables_dns_port: 53
 iptables_dhcp: true
 iptables_webserver: false
 iptables_zabbix: false
