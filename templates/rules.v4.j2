@@ -85,9 +85,27 @@
 -A OUTPUT -p icmp --icmp-type echo-request {{ state_ne_com }} "ping out"
 -A INPUT -p icmp --icmp-type echo-reply {{ state_e_com }} "ping out"
 
-# ntp / dns out
-{{ def_out }} -p udp -m multiport --dports 123,53 {{ state_ne_com }} "ntp & dns out"
-{{ def_in }} -p udp -m multiport --sports 123,53 {{ state_e_com }} "ntp & dns out"
+# ntp out
+{% if (iptables_ntp_dsts is defined) and (iptables_ntp_dsts | length > 0) %}
+{% for dst in iptables_ntp_dsts %}
+{{ def_out }} -d {{ dst }}/32 -p udp --dport 123 {{ state_ne_com }} "ntp out"
+{{ def_in }} -s {{ dst }}/32 -p udp --sport 123 {{ state_e_com }} "ntp out"
+{% endfor %}
+{% else %}
+{{ def_out }} -p udp --dport 123 {{ state_ne_com }} "ntp out"
+{{ def_in }} -p udp --sport 123 {{ state_e_com }} "ntp out"
+{% endif %}
+
+# dns out
+{% if (iptables_dns_dsts is defined) and (iptables_dns_dsts | length > 0) %}
+{% for dst in iptables_dns_dsts %}
+{{ def_out }} -d {{ dst }}/32 -p udp --dport 53 {{ state_ne_com }} "dns out"
+{{ def_in }} -s {{ dst }}/32 -p udp --sport 53 {{ state_e_com }} "dns out"
+{% endfor %}
+{% else %}
+{{ def_out }} -p udp --dport 53 {{ state_ne_com }} "dns out"
+{{ def_in }} -p udp --sport 53 {{ state_e_com }} "dns out"
+{% endif %}
 {% if iptables_dhcp %}
 
 # dhcp out
