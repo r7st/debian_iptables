@@ -82,8 +82,8 @@
 ### BGN OUTBOUND RULES ###
 ##########################
 # ping out
--A OUTPUT -p icmp --icmp-type echo-request {{ state_ne_com }} "ping out"
--A INPUT -p icmp --icmp-type echo-reply {{ state_e_com }} "ping out"
+-A OUTPUT -p icmp --icmp-type echo-request -m state --state NEW,ESTABLISHED -m limit --limit 1/s --limit-burst 10 -j ACCEPT -m comment --comment "ping out"
+-A INPUT -p icmp --icmp-type echo-reply -m state --state ESTABLISHED -m limit --limit 1/s --limit-burst 10 -j ACCEPT -m comment --comment "ping out"
 
 # ntp out
 {% if (iptables_ntp_dsts is defined) and (iptables_ntp_dsts | length > 0) %}
