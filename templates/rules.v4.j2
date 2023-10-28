@@ -113,9 +113,24 @@
 {{ def_in }} -p udp -m multiport --sports 67,68 {{ state_e_com }} "dhcp out"
 {% endif %}
 
-# http / https out
-{{ def_out }} -p tcp -m multiport --dports 443,80 {{ state_ne_com }} "https & http out"
-{{ def_in }} -p tcp -m multiport --sports 443,80 {{ state_e_com }} "https & http out"
+# http(s) out
+{% if (iptables_https_dsts is defined) and (iptables_https_dsts | length > 0) %}
+{% for dst in iptables_https_dsts %}
+{{ def_out }} -d {{ dst }}/32 -p tcp --dport 443 {{ state_ne_com }} "https out"
+{{ def_in }} -s {{ dst }}/32 -p tcp --sport 443 {{ state_e_com }} "https out"
+{% if iptables_http %}
+{{ def_out }} -d {{ dst }}/32 -p tcp --dport 80 {{ state_ne_com }} "http out"
+{{ def_in }} -s {{ dst }}/32 -p tcp --sport 80 {{ state_e_com }} "http out"
+{% endif %}
+{% endfor %}
+{% else %}
+{{ def_out }} -p tcp --dport 443 {{ state_ne_com }} "https out"
+{{ def_in }} -p tcp --sport 443 {{ state_e_com }} "https out"
+{% if iptables_http %}
+{{ def_out }} -p tcp --dport 80 {{ state_ne_com }} "http out"
+{{ def_in }} -p tcp --sport 80 {{ state_e_com }} "http out"
+{% endif %}
+{% endif %}
 ##########################
 ### END OUTBOUND RULES ###
 ##########################
