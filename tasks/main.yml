@@ -37,3 +37,9 @@
     - rules.v6
   notify: Restart iptables
   tags: iptables_configuration
+
+- name: Ensure iptables is running
+  ansible.builtin.systemd:
+    name: netfilter-persistent
+    state: started
+    enabled: true
