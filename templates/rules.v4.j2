@@ -88,8 +88,8 @@
 # ntp out
 {% if (iptables_ntp_dsts is defined) and (iptables_ntp_dsts | length > 0) %}
 {% for dst in iptables_ntp_dsts %}
-{{ def_out }} -d {{ dst }}/32 -p udp --dport 123 {{ state_ne_com }} "ntp out"
-{{ def_in }} -s {{ dst }}/32 -p udp --sport 123 {{ state_e_com }} "ntp out"
+{{ def_out }} -d {{ dst }} -p udp --dport 123 {{ state_ne_com }} "ntp out"
+{{ def_in }} -s {{ dst }} -p udp --sport 123 {{ state_e_com }} "ntp out"
 {% endfor %}
 {% else %}
 {{ def_out }} -p udp --dport 123 {{ state_ne_com }} "ntp out"
@@ -99,8 +99,8 @@
 # dns out
 {% if (iptables_dns_dsts is defined) and (iptables_dns_dsts | length > 0) %}
 {% for dst in iptables_dns_dsts %}
-{{ def_out }} -d {{ dst }}/32 -p {{ iptables_dns_proto }} --dport {{ iptables_dns_port }} {{ state_ne_com }} "dns out"
-{{ def_in }} -s {{ dst }}/32 -p {{ iptables_dns_proto }} --sport {{ iptables_dns_port }} {{ state_e_com }} "dns out"
+{{ def_out }} -d {{ dst }} -p {{ iptables_dns_proto }} --dport {{ iptables_dns_port }} {{ state_ne_com }} "dns out"
+{{ def_in }} -s {{ dst }} -p {{ iptables_dns_proto }} --sport {{ iptables_dns_port }} {{ state_e_com }} "dns out"
 {% endfor %}
 {% else %}
 {{ def_out }} -p {{ iptables_dns_proto }} --dport {{ iptables_dns_port }} {{ state_ne_com }} "dns out"
@@ -116,11 +116,11 @@
 # http(s) out
 {% if (iptables_https_dsts is defined) and (iptables_https_dsts | length > 0) %}
 {% for dst in iptables_https_dsts %}
-{{ def_out }} -d {{ dst }}/32 -p tcp --dport 443 {{ state_ne_com }} "https out"
-{{ def_in }} -s {{ dst }}/32 -p tcp --sport 443 {{ state_e_com }} "https out"
+{{ def_out }} -d {{ dst }} -p tcp --dport 443 {{ state_ne_com }} "https out"
+{{ def_in }} -s {{ dst }} -p tcp --sport 443 {{ state_e_com }} "https out"
 {% if iptables_http %}
-{{ def_out }} -d {{ dst }}/32 -p tcp --dport 80 {{ state_ne_com }} "http out"
-{{ def_in }} -s {{ dst }}/32 -p tcp --sport 80 {{ state_e_com }} "http out"
+{{ def_out }} -d {{ dst }} -p tcp --dport 80 {{ state_ne_com }} "http out"
+{{ def_in }} -s {{ dst }} -p tcp --sport 80 {{ state_e_com }} "http out"
 {% endif %}
 {% endfor %}
 {% else %}
