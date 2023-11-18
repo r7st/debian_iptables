@@ -9,6 +9,17 @@
 ### ANSIBLE MANAGED ###
 #######################
 
+{% if iptables_nat %}
+*nat
+-F
+-X
+{% for rule in iptables_nat_rules %}
+{{ rule }}
+{% endfor %}
+
+COMMIT
+
+{%endif %}
 *filter
 -F
 -X

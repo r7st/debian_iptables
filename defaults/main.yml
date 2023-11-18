@@ -5,3 +5,4 @@ iptables_webserver: false
 iptables_zabbix: false
 iptables_snmp: false
 iptables_http: true
+iptables_nat: false
